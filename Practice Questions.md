@@ -219,7 +219,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-	path: '/path/to/file'
+    path: '/path/to/file'
 ```
 
 ## Task 10:
