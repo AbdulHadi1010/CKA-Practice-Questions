@@ -1,5 +1,5 @@
-## Task 1
-*Create a PVC my-pvc with the capacity 10Gi and storage class k8s-csi-plugin.
+## Task 1:
+Create a PVC my-pvc with the capacity 10Gi and storage class k8s-csi-plugin.
 
 • Assign the PVC to the pod named nginx-pod with image nginx and mount to path /usr/share/html • Ensure the pod claims the volume as ReadWriteMany access mode • Use kubectl patch or kubectl edit to update the capacity of the PVC as 70Gi to record the change.
 
@@ -18,7 +18,7 @@ containers:
   ...
   volumeMounts:
     - mountPath: /usr/share/html
-	  name: task-pv-storage
+      name: task-pv-storage
   ...
 ```
 
@@ -39,11 +39,11 @@ containers:
 kubectl create pvc my-pvc --access-modes=ReadWriteMany --resources=requests.storage=10Gi --storage-class=manual
 ```
 
-## Task 2
+## Task 2:
 
-*Create a service account my-sa in new namespace my-ns. *
+Create a service account my-sa in new namespace my-ns.
 
-*Create a cluster role with the name new-cluster-role and ensure the role only can create and list below resources. *
+Create a cluster role with the name new-cluster-role and ensure the role only can create and list below resources.
 
 • DaemonSets • Deployments • Replicaset • Pods
 
@@ -70,7 +70,7 @@ To create ClusterRoleBinding
 $  kubectl create clusterrolebinding new-cluster-role-binding --clusterrole=new-cluster-role --serviceaccount=default:my-sa -n my-ns
 ```
 
-## Task 3
+## Task 3:
 
 From the pod label name=cpu-burner, find pods running high CPU workloads and Write the name of the pod consuming most CPU to the file /tmp/cpu.txt.
 
@@ -85,7 +85,7 @@ kubectl top pods -l name=cpu-burner -n kube-system
 echo '<podname>' >> /tmp/cpu.txt
 ```
 
-## Task 4
+## Task 4:
 
 
 Schedule a pod as follows Name :- nginx01 image :- nginx Node Selector :- name=node.
@@ -119,7 +119,7 @@ kubectl apply -f pod.yaml
 ```
 
 
-## Task 5
+## Task 5:
 
 Create a new nginx Ingress resource as follows: o Name: nginx-ingress o Namespace: ingress-ns o Exposing service me.html on path /me.html using service port 8080 o Exposing service test on path /test using service port 8080
 
@@ -155,17 +155,14 @@ spec:
                    number: 8080
 ```
 
-## Task 6
+## Task 6:
 
 Create a NetworkPolicy named k8s-netpol in the namespace namespace-netpol in a way that pods running on namespace internal on port 9200 can only access pods running in namespace-netpol. a. Allow the pods to communicate if they are running on port 9200 within the namespace b. Ensure the NetworkPolicy doesn’t allow other pods that are running other than port 9200 c. The communication from and to the pods running on port 9200 d. No pods running on port 9200 from other name spaces to allowed
 
 NB: There will be a default deny all from any namespace netpol will be already present.
 
-$$
-WORKING -ON- IT
-$$
 
-## Task 8
+## Task 7:
 
 Monitor the logs of pod loggy and extract log lines issue-not-found. Write the output to 
 /tmp/pod.txt. 
@@ -175,7 +172,7 @@ kubectl logs loggy | grep "issue-not-found" > /tmp/pod.txt
 ````
 
 
-## Task 9
+## Task 8:
 
 Create a deployment and perform rollback.
 
@@ -197,7 +194,7 @@ kubectl rollout undo deployment/nginx
 
 ```
 
-## Task 9.1
+## Task 8.1:
 
 Scale the deployment learning to 3 pods. 
 
@@ -206,7 +203,7 @@ kubectl scale deployment learning --replicas=3
 ```
 
 
-## Task 10
+## Task 9:
 
 Create a persistent Volume with name my-vol, of capactiy 2Gi and access mode ReadWriteOnce. The type of volume is hostpath and its location is /path/to/file
 
@@ -225,9 +222,11 @@ spec:
 	path: '/path/to/file'
 ```
 
-## Task 11
+## Task 10:
 
-Upgrade master control plane components from version 1.20.0 to only version 1.20.1. • Drain the master before start the upgrade and uncordn once the upgrade is completed • Update the kubelet and kubeadm as well
+Upgrade master control plane components from version 1.20.0 to only version 1.20.1. 
+• Drain the master before start the upgrade and uncordn once the upgrade is completed 
+• Update the kubelet and kubeadm as well
 
 ```
 To upgrade the kubeadm:
@@ -247,7 +246,7 @@ $ sudo systemctl daemon-reload
 $ sudo systemctl restart kubelet
 ```
 
-## Task 12
+## Task 11:
 
 Check to see how many nodes are ready (not including nodes tainted NoSchedule) and write the number to /path/to/node
 
@@ -255,16 +254,22 @@ Check to see how many nodes are ready (not including nodes tainted NoSchedule) a
 kubectl describe nodes | grep Taints | grep NoSchedule | wc -l >>/path/to/node
 ```
 
-## Task 13
+## Task 12:
 
-Set configuration context $ kubectl config use-context k8s Scale the deployment webserver to 6 pods
+Set configuration context 
+
+```
+$ kubectl config use-context k8s 
+```
+
+Scale the deployment webserver to 6 pods
 
 ```
 kubectl scale deployment webserver --replicas=6
 ```
 
 
-## Task 14
+## Task 13:
 
 Create a pod named kucc8 with a single app container for each of the following images running inside (there may be between 1 and 4 images specified): nginx + redis + memcached.
 
@@ -298,7 +303,7 @@ status: {}
 ```
 
 
-## Task 15
+## Task 14:
 
 Set the node labelled with name:node-01 as unavailable and reschedule all the pods running on it.
 
@@ -307,7 +312,7 @@ kubectl get nodes
 kubectl drain node-01 --ignore-daemonsets=true --delete-local-data=true --force=true
 ```
 
-## Task 16
+## Task 15:
 
 Name: jenkins Using image: jenkins In a new Kubenetes namespace named tools
 
@@ -316,10 +321,12 @@ kubectl create ns tools
 kubectl run jenkins --imagejenkins -n tools
 ```
 
-## Task 17
+## Task 16:
 
 Create a Static Pod with:
-Name: consul Using image: consul In a new Kubenetes namespace named tools
+Name: consul 
+Using image: consul 
+In a new Kubenetes namespace named tools
 
 ```
 kubectl run consul --image=consul --dry-run=client -n tools -o yaml > pod.yaml
@@ -332,9 +339,9 @@ vim pod.yaml
 # Save and exist the pod will be created based on the scheduleder automatically.
 ```
 
-## Task 18
+## Task 17:
 
-A Kubernetes worker node, labelled with name "node-01" is in state NotReady . Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
+A Kubernetes worker node, labelled with name "node-01" is in state NotReady. Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
 
 ```
 kubectl get nodes
@@ -349,8 +356,8 @@ Here are all the ConfigMap-related questions and answers:
 
 ---
 
-### Task 19:
-**Exercise:**  
+## Task 18:
+
 You create a ConfigMap named `myconfigmap` with the following data:
 - `APP_ENV`: production
 - `DB_HOST`: db.example.com  
@@ -375,8 +382,8 @@ kubectl describe configmap myconfigmap
 
 ---
 
-### Task 20:
-**Exercise:**  
+## Task 19:
+
 Create a Pod that uses the `myconfigmap` created earlier as environment variables. Ensure the environment variables from the ConfigMap are set correctly in the container.
 
 **Answer:**  
@@ -401,8 +408,8 @@ kubectl exec configmap-pod -- env
 
 ---
 
-### Task 21:
-**Exercise:**  
+## Task 20:
+
 Create a ConfigMap named `web-config` containing two key-value pairs:  
 - `index.html`: Basic HTML content  
 - `error.html`: Simple error message  
@@ -439,8 +446,8 @@ spec:
 
 ---
 
-### Task 22:
-**Exercise:**  
+## Task 21:
+
 Modify the `myconfigmap` ConfigMap to set `APP_ENV` to `staging` and verify that the Pod's environment variables reflect this change.
 
 **Answer:**  
@@ -461,8 +468,8 @@ kubectl exec -it configmap-pod -- env
 
 ---
 
-### Task 23:
-**Exercise:**  
+## Task 22:
+
 Create a ConfigMap named `script-config` with a key `init-script.sh` containing a multi-line shell script. Mount it in a Pod and ensure the script runs when the container starts.
 
 **Answer:**  
@@ -497,8 +504,8 @@ spec:
 
 ---
 
-### Task 24:
-**Exercise:**  
+## Task 23:
+
 Use a Secret for sensitive data like passwords. Create a Secret and pass it to a Pod via environment variables.
 
 **Answer:**  
@@ -542,7 +549,9 @@ kubectl exec -it configmap-pod -- env
 ```
 
 ---
-### Task 25. 
+
+## Task 24:
+
 Create a NetworkPolicy that allows only Pods with the label `app: frontend` to connect to Pods labeled `app: backend` on port 8080. All other traffic should be blocked.
 
 **Answer:**
@@ -570,7 +579,8 @@ spec:
 
 ---
 
-### Task 26. 
+## Task 25:
+
 Create a NetworkPolicy that denies all ingress traffic to Pods labeled `app: database` in the `production` namespace. Ensure that egress is still allowed.
 
 **Answer:**
@@ -591,7 +601,8 @@ spec:
 
 ---
 
-### Task 27. 
+## Task 25:
+
 Create a NetworkPolicy that restricts all Pods in the `web` namespace to only send traffic to IP addresses in the range `10.0.0.0/16` on TCP port 80. All other egress traffic should be denied.
 
 **Answer:**
@@ -616,7 +627,8 @@ spec:
 
 ---
 
-### Task 28. 
+## Task 28:
+
 Write a NetworkPolicy that ensures the Pod labeled `app: isolated` in the `dev` namespace is fully isolated and cannot communicate with any other Pods in the cluster, nor receive any inbound traffic.
 
 **Answer:**
@@ -638,7 +650,8 @@ spec:
 
 ---
 
-### Task 29. 
+## Task 29:
+
 Create a NetworkPolicy that allows all Pods in the `frontend` namespace to communicate with any Pod in the `backend` namespace on port 8080, while blocking all other traffic.
 
 **Answer:**
@@ -664,7 +677,8 @@ spec:
 
 ---
 
-### Task 30. 
+## Task 30:
+
 What is the simplest way to define a NetworkPolicy that denies all ingress and egress traffic by default for all Pods in a specific namespace?
 
 **Answer:**
@@ -683,7 +697,8 @@ spec:
 
 ---
 
-### Task 31. 
+## Task 31:
+
 You have created a NetworkPolicy to restrict ingress to certain Pods. How would you use a busybox Pod to test whether your policy is working as expected? What command would you run to test access between two Pods in different namespaces?
 
 **Answer:**
@@ -702,7 +717,7 @@ You have created a NetworkPolicy to restrict ingress to certain Pods. How would 
 
 ---
 
-### Task 32. 
+## Task 31: 
 Design a NetworkPolicy that allows DNS traffic (UDP on port 53) from any Pod to the DNS service in the `default` namespace but blocks all other traffic.
 
 **Answer:**
