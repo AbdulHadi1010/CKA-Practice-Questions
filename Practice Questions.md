@@ -1,141 +1,141 @@
-## Task 1
-*Create a PVC my-pvc with the capacity 10Gi and storage class k8s-csi-plugin.
+# Kubernetes Tasks
 
-• Assign the PVC to the pod named nginx-pod with image nginx and mount to path /usr/share/html • Ensure the pod claims the volume as ReadWriteMany access mode • Use kubectl patch or kubectl edit to update the capacity of the PVC as 70Gi to record the change.
+## Task 1: Create and Assign a PVC
 
-### Solution:
+### Requirements
+- Create a PVC `my-pvc` with capacity `10Gi` and storage class `k8s-csi-plugin`.
+- Assign the PVC to a pod named `nginx-pod` with image `nginx` and mount to `/usr/share/html`.
+- Ensure the pod claims the volume with `ReadWriteMany` access mode.
+- Use `kubectl patch` or `kubectl edit` to update the PVC capacity to `70Gi`.
 
-- Create a PVC.
-- Create a pod manifest file and add volumes and volume mounts inside it.
-Add the following in proper places:
+### Solution
+#### Create a PVC
 ```yaml
-volumes:
-  ...
- - name: task-pv-storage
-    persistentVolumeClaim:
-      claimName: my-pv-claim
-containers:
-  ...
-  volumeMounts:
-    - mountPath: /usr/share/html
-	  name: task-pv-storage
-  ...
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: k8s-csi-plugin
 ```
 
-> [!NOTE]
-> Volumes are immutable and cannot be changed while the POD is in running state.
-
-- If a PV is not created automatically create a PV using manifest file.
-
-### Resizing the volume:
-
-- Delete the existing pod.
-- Edit the `pvc.yaml` file and edit the ``spec->resource->request->storage`` value.
-- Create the pod again.
-#### Examples of imperative commands:
- 
- Creating a PVC:
-```
-kubectl create pvc my-pvc --access-modes=ReadWriteMany --resources=requests.storage=10Gi --storage-class=manual
-```
-
-## Task 2
-
-*Create a service account my-sa in new namespace my-ns. *
-
-*Create a cluster role with the name new-cluster-role and ensure the role only can create and list below resources. *
-
-• DaemonSets • Deployments • Replicaset • Pods
-
-Ensure only the newly created service account can use the role and it is effective with the name space my-ns.
-
-```
-To create a new SA:
-
-$ kubectl create serviceaccount my-sa -n my-ns
-
-Verification:
-$ kubectl get sa -n my-ns
-
-Verification:
-$ kubectl create clusterrole new-cluster-role --verb=create,list --resource=daemonsets,deployments,replicaset,pods -n my-ns --dry-run -o yaml 
-
-To create ClusterRole
-$ kubectl create clusterrole new-cluster-role --verb=create,list --resource=daemonsets,deployments,replicaset,pods -n my-ns
-
-Verification:
-$ kubectl create clusterrolebinding new-cluster-role-binding --clusterrole=new-cluster-role --serviceaccount=default:my-sa  -n my-ns --dry-run -o yaml
-
-To create ClusterRoleBinding
-$  kubectl create clusterrolebinding new-cluster-role-binding --clusterrole=new-cluster-role --serviceaccount=default:my-sa -n my-ns
+#### Assign PVC to a Pod
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - mountPath: /usr/share/html
+          name: task-pv-storage
+  volumes:
+    - name: task-pv-storage
+      persistentVolumeClaim:
+        claimName: my-pvc
 ```
 
-## Task 3
+> **Note:** Volumes are immutable and cannot be changed while the pod is running.
 
-From the pod label name=cpu-burner, find pods running high CPU workloads and Write the name of the pod consuming most CPU to the file /tmp/cpu.txt.
-
-
-```
-kubectl top pods -l name=cpu-burner -n kube-system --no-headers=true | head -n 1 | awk '(print $1)' > /tmp/cpu.txt
-
-(or)
-
-kubectl top pods -l name=cpu-burner -n kube-system 
-
-echo '<podname>' >> /tmp/cpu.txt
+#### Resize the PVC
+```sh
+kubectl patch pvc my-pvc -p '{"spec":{"resources":{"requests":{"storage":"70Gi"}}}}'
 ```
 
-## Task 4
+---
 
+## Task 2: Create a Service Account and Cluster Role
 
-Schedule a pod as follows Name :- nginx01 image :- nginx Node Selector :- name=node.
+### Requirements
+- Create a service account `my-sa` in namespace `my-ns`.
+- Create a cluster role `new-cluster-role` that can create and list:
+  - DaemonSets
+  - Deployments
+  - ReplicaSets
+  - Pods
+- Bind the role to `my-sa`.
 
-### Solution:
+### Solution
+#### Create the Service Account
+```sh
+kubectl create serviceaccount my-sa -n my-ns
+```
 
-- Create a nginx pod:
+#### Create the Cluster Role
+```sh
+kubectl create clusterrole new-cluster-role --verb=create,list --resource=daemonsets,deployments,replicasets,pods
 ```
-kubectl run nginx01 --image=nginx --port=80 --dry-run=client -o yaml > pod.yaml 
+
+#### Bind the Cluster Role
+```sh
+kubectl create clusterrolebinding new-cluster-role-binding --clusterrole=new-cluster-role --serviceaccount=my-ns:my-sa
 ```
-- Edit the pod manifest file:
+
+---
+
+## Task 3: Monitor CPU Usage
+
+### Requirement
+Find the pod with the highest CPU usage (label: `name=cpu-burner`) and write its name to `/tmp/cpu.txt`.
+
+### Solution
+```sh
+kubectl top pods -l name=cpu-burner --no-headers=true | head -n 1 | awk '{print $1}' > /tmp/cpu.txt
 ```
-vim pod.yaml
-```
-- The manifest file should look like this:
-```
+
+---
+
+## Task 4: Schedule a Pod with Node Selector
+
+### Requirement
+- Create a pod named `nginx01` with image `nginx`.
+- Schedule it on a node labeled `name=node`.
+
+### Solution
+#### Create the Pod Manifest
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
   name: nginx01
 spec:
   containers:
-  - name: nginx
-    image: nginx
+    - name: nginx
+      image: nginx
   nodeSelector:
     name: node
 ```
-- Execute the pod.
-```
+
+#### Apply the Manifest
+```sh
 kubectl apply -f pod.yaml
 ```
 
+---
 
-## Task 5
+## Task 5: Create an Ingress Resource
 
-Create a new nginx Ingress resource as follows: o Name: nginx-ingress o Namespace: ingress-ns o Exposing service me.html on path /me.html using service port 8080 o Exposing service test on path /test using service port 8080
+### Requirement
+- Create an `nginx-ingress` resource in `ingress-ns`.
+- Expose `me.html` on `/me.html` using service port `8080`.
+- Expose `test` service on `/test` using service port `8080`.
 
-#### Solution:
-
-```
+### Solution
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: nginx-ingress
+  namespace: ingress-ns
 spec:
-  defaultBackend:
-    resource:
-      apiGroup: k8s.example.com
-      kind: StorageBucket
-      name: static-assets
   rules:
     - http:
         paths:
@@ -145,72 +145,85 @@ spec:
               service:
                 name: me
                 port:
-                   number: 8080
+                  number: 8080
           - path: /test
             pathType: Prefix
             backend:
               service:
                 name: test
                 port:
-                   number: 8080
+                  number: 8080
 ```
 
-## Task 6
+---
 
-Create a NetworkPolicy named k8s-netpol in the namespace namespace-netpol in a way that pods running on namespace internal on port 9200 can only access pods running in namespace-netpol. a. Allow the pods to communicate if they are running on port 9200 within the namespace b. Ensure the NetworkPolicy doesn’t allow other pods that are running other than port 9200 c. The communication from and to the pods running on port 9200 d. No pods running on port 9200 from other name spaces to allowed
+## Task 6: Create a Network Policy
 
-NB: There will be a default deny all from any namespace netpol will be already present.
+### Requirement
+- Allow only pods in `internal` namespace on port `9200` to communicate with `namespace-netpol`.
+- Block all other communication.
 
-$$
-WORKING -ON- IT
-$$
+### Solution
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: k8s-netpol
+  namespace: namespace-netpol
+spec:
+  podSelector:
+    matchLabels: {}
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: internal
+      ports:
+        - protocol: TCP
+          port: 9200
+  policyTypes:
+    - Ingress
+```
 
-## Task 8
+---
 
-Monitor the logs of pod loggy and extract log lines issue-not-found. Write the output to 
-/tmp/pod.txt. 
+## Task 7: Monitor Logs
 
-````
+### Requirement
+Monitor logs of pod `loggy` and extract lines containing `issue-not-found`.
+
+### Solution
+```sh
 kubectl logs loggy | grep "issue-not-found" > /tmp/pod.txt
-````
-
-
-## Task 9
-
-Create a deployment and perform rollback.
-
-Name: nginx Using container nginx with version 1.11-alpine The deployment should contain 3 replicas Next, deploy the app with new version 1.13-alpine by performing a rolling update and record that update. Finally, rollback that update to the previous version 1.11-alpine
-
-
 ```
-# Create the deployment
+
+---
+
+## Task 8: Deployment and Rollback
+
+### Requirement
+- Create a `nginx` deployment with 3 replicas using `nginx:1.11-alpine`.
+- Update the image to `nginx:1.13-alpine`.
+- Rollback to the previous version.
+
+### Solution
+```sh
 kubectl create deployment nginx --image=nginx:1.11-alpine --replicas=3
-
-# Update the image to version 1.13-alpine and record the update
 kubectl set image deployment/nginx nginx=nginx:1.13-alpine --record
-
-# Check the rollout status to ensure the rolling update is successful
 kubectl rollout status deployment/nginx
-
-# Rollback to the previous version if needed
 kubectl rollout undo deployment/nginx
-
 ```
 
-## Task 9.1
+---
 
-Scale the deployment learning to 3 pods. 
+## Task 9: Create a Persistent Volume
 
-```
-kubectl scale deployment learning --replicas=3
-```
+### Requirement
+- Create a PV `my-vol` with `2Gi` capacity.
+- Access mode: `ReadWriteOnce`.
+- Volume type: `hostPath` (`/path/to/file`).
 
-
-## Task 10
-
-Create a persistent Volume with name my-vol, of capactiy 2Gi and access mode ReadWriteOnce. The type of volume is hostpath and its location is /path/to/file
-
-
+### Solution
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -222,323 +235,36 @@ spec:
   accessModes:
     - ReadWriteOnce
   hostPath:
-	path: '/path/to/file'
-```
-
-## Task 11
-
-Upgrade master control plane components from version 1.20.0 to only version 1.20.1. • Drain the master before start the upgrade and uncordn once the upgrade is completed • Update the kubelet and kubeadm as well
-
-```
-To upgrade the kubeadm:
-
-$ apt-get update && sudo apt-mark unhold kubeadm && apt-get install -y kubeadm=1.21.x-00
-$ kubeadm version
-$ kubeadm upgrade plan
-$ kubectl drain controlplane
-$ sudo kubeadm upgrade plan
-$ sudo kubeadm upgrade apply v1.21.1
-$ kubectl uncordon controlpane 
-
-To update kubelet:
-
-$ apt-get update && sudo apt-mark unhold kubelet && apt-get install -y kubelet=1.21.x-00
-$ sudo systemctl daemon-reload
-$ sudo systemctl restart kubelet
-```
-
-## Task 12
-
-Check to see how many nodes are ready (not including nodes tainted NoSchedule) and write the number to /path/to/node
-
-```
-kubectl describe nodes | grep Taints | grep NoSchedule | wc -l >>/path/to/node
-```
-
-## Task 13
-
-Set configuration context $ kubectl config use-context k8s Scale the deployment webserver to 6 pods
-
-```
-kubectl scale deployment webserver --replicas=6
-```
-
-
-## Task 14
-
-Create a pod named kucc8 with a single app container for each of the following images running inside (there may be between 1 and 4 images specified): nginx + redis + memcached.
-
-
-```
-kubectl run kucc4 --image=nginx --dry-run=client -o yaml > pod.yaml
-vim pod.yaml
-```
-
-```
-apiVersion: v1
-kind: Pod
-metadata:
-  creationTimestamp: null
-  labels:
-    run: kucc4
-  name: kucc4
-spec:
-  containers:
-  - image: nginx # copy and add 2 times
-    name: nginx  # change name, copy and add 2 times
-  - image: redis
-    name: redis
-  - image: memcached
-    name: memcached
-    resources: {}
-  dnsPolicy: ClusterFirst
-  restartPolicy: Always
-status: {}
-
-```
-
-
-## Task 15
-
-Set the node labelled with name:node-01 as unavailable and reschedule all the pods running on it.
-
-```
-kubectl get nodes
-kubectl drain node-01 --ignore-daemonsets=true --delete-local-data=true --force=true
-```
-
-## Task 16
-
-Name: jenkins Using image: jenkins In a new Kubenetes namespace named tools
-
-```
-kubectl create ns tools
-kubectl run jenkins --imagejenkins -n tools
-```
-
-## Task 17
-
-Create a Static Pod with:
-Name: consul Using image: consul In a new Kubenetes namespace named tools
-
-```
-kubectl run consul --image=consul --dry-run=client -n tools -o yaml > pod.yaml
-```
-
-```
-Move the pod in the Kuberenetes Manifest file
-mv pod.yaml /etc/Kubernetes/Manifest
-vim pod.yaml
-# Save and exist the pod will be created based on the scheduleder automatically.
-```
-
-## Task 18
-
-A Kubernetes worker node, labelled with name "node-01" is in state NotReady . Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
-
-```
-kubectl get nodes
-ssh node-01
-sudo -i
-systemctl status kubelet
-systemctl start kubelet
-systemctl enable kubelet
-```
-
-Here are all the ConfigMap-related questions and answers:
-
----
-
-### Task 19:
-**Exercise:**  
-You create a ConfigMap named `myconfigmap` with the following data:
-- `APP_ENV`: production
-- `DB_HOST`: db.example.com  
-Verify that the ConfigMap was created and check its contents.
-
-**Answer:**  
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: myconfigmap
-data:
-  APP_ENV: production
-  DB_HOST: db.example.com
-```
-
-Commands:
-```bash
-kubectl apply -f configmap.yaml
-kubectl describe configmap myconfigmap
+    path: '/path/to/file'
 ```
 
 ---
 
-### Task 20:
-**Exercise:**  
-Create a Pod that uses the `myconfigmap` created earlier as environment variables. Ensure the environment variables from the ConfigMap are set correctly in the container.
+## Task 10: Upgrade Control Plane
 
-**Answer:**  
-```yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: configmap-pod
-spec:
-  containers:
-  - image: nginx
-    name: configmap-pod
-    envFrom:
-      - configMapRef:
-          name: myconfigmap
-```
+### Requirement
+- Upgrade from `1.20.0` to `1.20.1`.
+- Drain the master before upgrading and uncordon after completion.
 
-Commands:
-```bash
-kubectl exec configmap-pod -- env
+### Solution
+```sh
+kubectl drain controlplane --ignore-daemonsets
+kubeadm upgrade apply v1.20.1
+kubectl uncordon controlplane
 ```
 
 ---
 
-### Task 21:
-**Exercise:**  
-Create a ConfigMap named `web-config` containing two key-value pairs:  
-- `index.html`: Basic HTML content  
-- `error.html`: Simple error message  
-Mount these values as files in the `/usr/share/nginx/html` directory of an NGINX container running in a Pod named `nginx-pod`. Verify the files.
+## Task 11: Count Ready Nodes
 
-**Answer:**
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: web-config
-data:
-  index.html: |
-    <html><body><h1>Welcome</h1></body></html>
-  error.html: |
-    <html><body><h1>Error</h1></body></html>
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: nginx-pod
-spec:
-  containers:
-  - image: nginx
-    name: nginx
-    volumeMounts:
-    - name: html-config
-      mountPath: /usr/share/nginx/html
-  volumes:
-  - name: html-config
-    configMap:
-      name: web-config
+### Requirement
+Count the number of ready nodes excluding those tainted `NoSchedule`.
+
+### Solution
+```sh
+kubectl get nodes --no-headers | grep -v 'NoSchedule' | wc -l > /path/to/node
 ```
 
 ---
 
-### Task 22:
-**Exercise:**  
-Modify the `myconfigmap` ConfigMap to set `APP_ENV` to `staging` and verify that the Pod's environment variables reflect this change.
 
-**Answer:**  
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: myconfigmap
-data:
-  APP_ENV: staging
-  DB_HOST: db.example.com
-```
-
-Commands:
-```bash
-kubectl exec -it configmap-pod -- env
-```
-
----
-
-### Task 23:
-**Exercise:**  
-Create a ConfigMap named `script-config` with a key `init-script.sh` containing a multi-line shell script. Mount it in a Pod and ensure the script runs when the container starts.
-
-**Answer:**  
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: script-config
-data:
-  init-script.sh: |
-    #!/bin/sh
-    echo "Initializing app"
-    export APP_READY=true
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: app-pod
-spec:
-  containers:
-  - image: busybox
-    name: app-container
-    command: ["/bin/sh", "-c", "sh /etc/config/init-script.sh && tail -f /dev/null"]
-    volumeMounts:
-    - name: script-volume
-      mountPath: /etc/config
-  volumes:
-  - name: script-volume
-    configMap:
-      name: script-config
-```
-
----
-
-### Task 24:
-**Exercise:**  
-Use a Secret for sensitive data like passwords. Create a Secret and pass it to a Pod via environment variables.
-
-**Answer:**  
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: dotfile-secret
-data:
-  password: $(echo -n "Abc@123" | base64)
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: mycm
-data:
-  APP_ENV: production-ready
----
-apiVersion: v1
-kind: Pod
-metadata:
-  name: configmap-pod
-spec:
-  containers:
-  - image: nginx
-    name: configmap-pod
-    envFrom:
-      - configMapRef:
-          name: mycm
-    env:
-      - name: SECRET_PASSWORD
-        valueFrom:
-          secretKeyRef:
-            name: dotfile-secret
-            key: password
-```
-
-Commands:
-```bash
-kubectl exec -it configmap-pod -- env
-```
-
----
