@@ -35,7 +35,7 @@ containers:
 #### Examples of imperative commands:
  
  Creating a PVC:
-```
+```bash
 kubectl create pvc my-pvc --access-modes=ReadWriteMany --resources=requests.storage=10Gi --storage-class=manual
 ```
 
@@ -49,7 +49,7 @@ Create a cluster role with the name new-cluster-role and ensure the role only ca
 
 Ensure only the newly created service account can use the role and it is effective with the name space my-ns.
 
-```
+```bash
 To create a new SA:
 
 $ kubectl create serviceaccount my-sa -n my-ns
@@ -75,7 +75,7 @@ $  kubectl create clusterrolebinding new-cluster-role-binding --clusterrole=new-
 From the pod label name=cpu-burner, find pods running high CPU workloads and Write the name of the pod consuming most CPU to the file /tmp/cpu.txt.
 
 
-```
+```bash
 kubectl top pods -l name=cpu-burner -n kube-system --no-headers=true | head -n 1 | awk '(print $1)' > /tmp/cpu.txt
 
 (or)
@@ -93,15 +93,15 @@ Schedule a pod as follows Name :- nginx01 image :- nginx Node Selector :- name=n
 ### Solution:
 
 - Create a nginx pod:
-```
+```bash
 kubectl run nginx01 --image=nginx --port=80 --dry-run=client -o yaml > pod.yaml 
 ```
 - Edit the pod manifest file:
-```
+```bash
 vim pod.yaml
 ```
 - The manifest file should look like this:
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -114,7 +114,7 @@ spec:
     name: node
 ```
 - Execute the pod.
-```
+```bash
 kubectl apply -f pod.yaml
 ```
 
@@ -125,7 +125,7 @@ Create a new nginx Ingress resource as follows: o Name: nginx-ingress o Namespac
 
 #### Solution:
 
-```
+```yaml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -167,7 +167,7 @@ NB: There will be a default deny all from any namespace netpol will be already p
 Monitor the logs of pod loggy and extract log lines issue-not-found. Write the output to 
 /tmp/pod.txt. 
 
-````
+````bash
 kubectl logs loggy | grep "issue-not-found" > /tmp/pod.txt
 ````
 
@@ -179,7 +179,7 @@ Create a deployment and perform rollback.
 Name: nginx Using container nginx with version 1.11-alpine The deployment should contain 3 replicas Next, deploy the app with new version 1.13-alpine by performing a rolling update and record that update. Finally, rollback that update to the previous version 1.11-alpine
 
 
-```
+```bash
 # Create the deployment
 kubectl create deployment nginx --image=nginx:1.11-alpine --replicas=3
 
@@ -198,7 +198,7 @@ kubectl rollout undo deployment/nginx
 
 Scale the deployment learning to 3 pods. 
 
-```
+```bash
 kubectl scale deployment learning --replicas=3
 ```
 
@@ -228,7 +228,7 @@ Upgrade master control plane components from version 1.20.0 to only version 1.20
 • Drain the master before start the upgrade and uncordn once the upgrade is completed 
 • Update the kubelet and kubeadm as well
 
-```
+```bash
 To upgrade the kubeadm:
 
 $ apt-get update && sudo apt-mark unhold kubeadm && apt-get install -y kubeadm=1.21.x-00
@@ -250,7 +250,7 @@ $ sudo systemctl restart kubelet
 
 Check to see how many nodes are ready (not including nodes tainted NoSchedule) and write the number to /path/to/node
 
-```
+```bash
 kubectl describe nodes | grep Taints | grep NoSchedule | wc -l >>/path/to/node
 ```
 
@@ -258,13 +258,13 @@ kubectl describe nodes | grep Taints | grep NoSchedule | wc -l >>/path/to/node
 
 Set configuration context 
 
-```
+```bash
 $ kubectl config use-context k8s 
 ```
 
 Scale the deployment webserver to 6 pods
 
-```
+```bash
 kubectl scale deployment webserver --replicas=6
 ```
 
@@ -274,12 +274,12 @@ kubectl scale deployment webserver --replicas=6
 Create a pod named kucc8 with a single app container for each of the following images running inside (there may be between 1 and 4 images specified): nginx + redis + memcached.
 
 
-```
+```bash
 kubectl run kucc4 --image=nginx --dry-run=client -o yaml > pod.yaml
 vim pod.yaml
 ```
 
-```
+```yaml
 apiVersion: v1
 kind: Pod
 metadata:
@@ -307,7 +307,7 @@ status: {}
 
 Set the node labelled with name:node-01 as unavailable and reschedule all the pods running on it.
 
-```
+```bash
 kubectl get nodes
 kubectl drain node-01 --ignore-daemonsets=true --delete-local-data=true --force=true
 ```
@@ -316,7 +316,7 @@ kubectl drain node-01 --ignore-daemonsets=true --delete-local-data=true --force=
 
 Name: jenkins Using image: jenkins In a new Kubenetes namespace named tools
 
-```
+```bash
 kubectl create ns tools
 kubectl run jenkins --imagejenkins -n tools
 ```
@@ -328,11 +328,11 @@ Name: consul
 Using image: consul 
 In a new Kubenetes namespace named tools
 
-```
+```bash
 kubectl run consul --image=consul --dry-run=client -n tools -o yaml > pod.yaml
 ```
 
-```
+```bash
 Move the pod in the Kuberenetes Manifest file
 mv pod.yaml /etc/Kubernetes/Manifest
 vim pod.yaml
@@ -343,7 +343,7 @@ vim pod.yaml
 
 A Kubernetes worker node, labelled with name "node-01" is in state NotReady. Investigate why this is the case, and perform any appropriate steps to bring the node to a Ready state, ensuring that any changes are made permanent.
 
-```
+```bash
 kubectl get nodes
 ssh node-01
 sudo -i
